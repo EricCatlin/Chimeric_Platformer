@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+	<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+	<ProductVersion>10.0.20506</ProductVersion>
+	<SchemaVersion>2.0</SchemaVersion>
+	<ProjectGuid>{2A5CA6FE-EC25-A3D0-3385-CCE5EEFEC18A}</ProjectGuid>
+	<OutputType>Library</OutputType>
+	<AppDesignerFolder>Properties</AppDesignerFolder>
+	<RootNamespace></RootNamespace>
+	<AssemblyName>Assembly-UnityScript</AssemblyName>
+	<TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+	<FileAlignment>512</FileAlignment>
+	<BaseDirectory>Assets</BaseDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+	<DebugSymbols>true</DebugSymbols>
+	<DebugType>full</DebugType>
+	<Optimize>false</Optimize>
+	<OutputPath>Temp\bin\Debug\</OutputPath>
+	<DefineConstants>DEBUG;TRACE;UNITY_STANDALONE_WIN;ENABLE_MICROPHONE;ENABLE_TEXTUREID_MAP;ENABLE_AUDIO_FMOD;UNITY_STANDALONE;ENABLE_MONO;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_GENERICS;ENABLE_SUBSTANCE;INCLUDE_WP8SUPPORT;ENABLE_MOVIES;ENABLE_WWW;ENABLE_IMAGEEFFECTS;ENABLE_WEBCAM;INCLUDE_METROSUPPORT;RENDER_SOFTWARE_CURSOR;ENABLE_NETWORK;ENABLE_PHYSICS;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_2D_PHYSICS;ENABLE_SHADOWS;ENABLE_AUDIO;ENABLE_NAVMESH_CARVING;ENABLE_DUCK_TYPING;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;UNITY_4_3_1;UNITY_4_3;ENABLE_PROFILER;UNITY_EDITOR;UNITY_EDITOR_WIN</DefineConstants>
+	<ErrorReport>prompt</ErrorReport>
+	<WarningLevel>4</WarningLevel>
+	<NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+	<DebugType>pdbonly</DebugType>
+	<Optimize>true</Optimize>
+	<OutputPath>Temp\bin\Release\</OutputPath>
+	<DefineConstants>TRACE</DefineConstants>
+	<ErrorReport>prompt</ErrorReport>
+	<WarningLevel>4</WarningLevel>
+	<NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+	<Reference Include="System" />
+    <Reference Include="System.XML" />
+	<Reference Include="System.Core" />
+	<Reference Include="System.Xml.Linq" />
+	<Reference Include="UnityEngine">
+	  <HintPath>C:/Program Files (x86)/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
+	</Reference>
+	<Reference Include="UnityEditor">
+	  <HintPath>C:/Program Files (x86)/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
+	</Reference>
+  </ItemGroup>
+  <ItemGroup>
+     <Compile Include="Assets\Scenes\LoadLevel.js" />
+     <Compile Include="Assets\Scenes\LoadLevel0.js" />
+     <Compile Include="Assets\Scenes\LoadLevel1.js" />
+     <Compile Include="Assets\Scenes\LoadLevel10.js" />
+     <Compile Include="Assets\Scenes\LoadLevel11.js" />
+     <Compile Include="Assets\Scenes\LoadLevel12.js" />
+     <Compile Include="Assets\Scenes\LoadLevel13.js" />
+     <Compile Include="Assets\Scenes\LoadLevel2.js" />
+     <Compile Include="Assets\Scenes\LoadLevel3.js" />
+     <Compile Include="Assets\Scenes\LoadLevel4.js" />
+     <Compile Include="Assets\Scenes\LoadLevel5.js" />
+     <Compile Include="Assets\Scenes\LoadLevel6.js" />
+     <Compile Include="Assets\Scenes\LoadLevel7.js" />
+     <Compile Include="Assets\Scenes\LoadLevel8.js" />
+     <Compile Include="Assets\Scenes\LoadLevel9.js" />
+     <Compile Include="Assets\Scripts\CameraFollowBetter.js" />
+     <Compile Include="Assets\Scripts\CheckPointObjectScript.js" />
+     <Compile Include="Assets\Scripts\CheckPointSpawnerCubeScript.js" />
+     <Compile Include="Assets\Scripts\Controllers\AimArea.js" />
+     <Compile Include="Assets\Scripts\Controllers\AimButton.js" />
+     <Compile Include="Assets\Scripts\Controllers\AimingPad.js" />
+     <Compile Include="Assets\Scripts\Controllers\ControllerUI.js" />
+     <Compile Include="Assets\Scripts\Controllers\GameButton.js" />
+     <Compile Include="Assets\Scripts\Controllers\MenuButton.js" />
+     <Compile Include="Assets\Scripts\Controllers\PBControllerDirection.js" />
+     <Compile Include="Assets\Scripts\Controllers\PBDownDirectionButton.js" />
+     <Compile Include="Assets\Scripts\Controllers\PBFire1Button.js" />
+     <Compile Include="Assets\Scripts\Controllers\PBFire2Button.js" />
+     <Compile Include="Assets\Scripts\Controllers\PBJumpButton.js" />
+     <Compile Include="Assets\Scripts\Controllers\PBLeftDirectionButton.js" />
+     <Compile Include="Assets\Scripts\Controllers\PBRightDirectionButton.js" />
+     <Compile Include="Assets\Scripts\Controllers\PBUpDirectionButton.js" />
+     <Compile Include="Assets\Scripts\End.js" />
+     <Compile Include="Assets\Scripts\Enemy.js" />
+     <Compile Include="Assets\Scripts\EnemyAI.js" />
+     <Compile Include="Assets\Scripts\EnemyHealthSystem.js" />
+     <Compile Include="Assets\Scripts\GameMusicScript.js" />
+     <Compile Include="Assets\Scripts\Glint.js" />
+     <Compile Include="Assets\Scripts\Goomba Script.js" />
+     <Compile Include="Assets\Scripts\Level3Script.js" />
+     <Compile Include="Assets\Scripts\LookAt.js" />
+     <Compile Include="Assets\Scripts\LookAtMouse.js" />
+     <Compile Include="Assets\Scripts\MagnetMineScript.js" />
+     <Compile Include="Assets\Scripts\MainMenuGUI.js" />
+     <Compile Include="Assets\Scripts\Menu.js" />
+     <Compile Include="Assets\Scripts\MoveInIncrements.js" />
+     <Compile Include="Assets\Scripts\MovingPlatformPhysicsHack_Delete.js" />
+     <Compile Include="Assets\Scripts\MovingPlatformSwitchable.js" />
+     <Compile Include="Assets\Scripts\MovingPlatformWaypoint.js" />
+     <Compile Include="Assets\Scripts\MusicMangerScipt.js" />
+     <Compile Include="Assets\Scripts\NestScript.js" />
+     <Compile Include="Assets\Scripts\NestSwarmer.js" />
+     <Compile Include="Assets\Scripts\ObjectLabel.js" />
+     <Compile Include="Assets\Scripts\PBCameraZone.js" />
+     <Compile Include="Assets\Scripts\Pickup.js" />
+     <Compile Include="Assets\Scripts\PlayerMovement.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\CheckPointSetter.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\GunScript.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\HookShotScript.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\HookShotTipScript.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\PlayerBulletScript.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\Portal1Script.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\Portal2ObjectScript.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\Portal2Script.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\PortalGunScript.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\PortalObjectScript.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\ReticalScript.js" />
+     <Compile Include="Assets\Scripts\RigsScripts\markerScript.js" />
+     <Compile Include="Assets\Scripts\SimpleEmmiter.js" />
+     <Compile Include="Assets\Scripts\Swarmer.js" />
+     <Compile Include="Assets\Scripts\TextLabel.js" />
+     <Compile Include="Assets\Scripts\Turret.js" />
+     <Compile Include="Assets\Scripts\Tutorial2Script.js" />
+     <Compile Include="Assets\Scripts\TutorialPortalScript.js" />
+     <Compile Include="Assets\Scripts\TutorialScript.js" />
+     <Compile Include="Assets\Scripts\WingScript.js" />
+     <Compile Include="Assets\Scripts\bulletScript.js" />
+     <Compile Include="Assets\Scripts\switches\SwitchBehavior.js" />
+     <Compile Include="Assets\Scripts\switches\SwitchReciever.js" />
+     <Compile Include="Assets\TrailAdvanced.js" />
+     <Compile Include="Assets\Unlocker.js" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+	   Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  
+</Project>
