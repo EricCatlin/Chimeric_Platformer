@@ -140,9 +140,9 @@ function Update () {
 		aimAtPlayer();
 	}else{
 		if(transform.rotation.eulerAngles.magnitude > 1){
-			transform.rotation = Quaternion.Lerp(transform.rotation,Quaternion.EulerAngles(Vector3(0,0,0)),.05);
+			transform.rotation = Quaternion.Lerp(transform.rotation,Quaternion.Euler(Vector3(0,0,0)),.05);
 		}else {
-			transform.rotation=Quaternion.EulerAngles(Vector3(0,0,0));
+			transform.rotation=Quaternion.Euler(Vector3(0,0,0));
 		}
 	}
 
