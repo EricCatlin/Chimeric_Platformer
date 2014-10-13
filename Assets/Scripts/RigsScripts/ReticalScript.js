@@ -26,7 +26,7 @@ function Start () {
 
 
 	player = GameObject.Find("Player");
-	movement = player.GetComponent("PlayerMovement");
+	movement = player.GetComponent.<PlayerMovement>();
 	cam    = GameObject.FindObjectOfType(Camera);
 	reticalFocus = GameObject.Find("ReticalZone");	
 }
@@ -113,7 +113,7 @@ function MousePos(vec : Vector3){
 	
 }
 function setReticalLockedAtPoint(pos:Vector3){
-	if(gameObject.active){
+	if(gameObject.activeSelf){
 		if(!reticalIsLockedToWorld){
 			EnterLockedMode(pos);
 		}

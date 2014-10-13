@@ -63,10 +63,10 @@ function Start () {
 	//retical = GameObject.Find("TargetingRetical");
 
 
-	movement = GameObject.Find("Player").GetComponent("PlayerMovement");
+	movement = GameObject.Find("Player").GetComponent.<PlayerMovement>();
 	soundSource = gameObject.AddComponent(AudioSource);
 	soundSource.rolloffMode = AudioRolloffMode.Linear;
-	cameraa = GameObject.Find("Camera Rig").GetComponent("Camera");
+	cameraa = GameObject.Find("Camera Rig").GetComponent.<Camera>();
 	muzzleTransform = transform.Find("Muzzle");
 	//line = GetComponent(LineRenderer);
 	line.SetVertexCount(2);
@@ -96,7 +96,7 @@ function Update () {
 	}
 
 	currRotation = transform.rotation;
-	currSpeed = movement.rigidbody.velocity;
+	currSpeed = movement.rigid.velocity;
 	getInputs();
 	aim();	
 	if(isShooting){

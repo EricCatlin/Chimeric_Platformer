@@ -112,18 +112,19 @@ function AddVertexInRope(pos:Transform,index:int){
 }
 function LookForCollisions(){
 var direction:Vector3 = new Vector3();
-		direction = (muzzleTransform.transform.position-RopeVertexes[RopeVertexes.Count-1].position);
+		direction = (movement.transform.position-RopeVertexes[RopeVertexes.Count-1].position);
 	if(direction.magnitude>10){
 
-	if(Physics.Linecast(muzzleTransform.transform.position-direction/10,RopeVertexes[RopeVertexes.Count-1].position+direction/10,hit)){
+	if(Physics.Linecast(movement.transform.position,RopeVertexes[RopeVertexes.Count-1].position+direction/10,hit)){
 
 			if(hit.collider.tag.Equals("1DMG")){
 				tipScript.letGo();
 			}else{
 			if(!hit.collider.tag.Equals("Pickup")){
 				var  newPoint2 : GameObject = new GameObject();
-				newPoint2.transform.position = 	hit.collider.ClosestPointOnBounds(hit.point   +direction.normalized )  ;
+				newPoint2.transform.position = 	hit.collider.ClosestPointOnBounds(hit.point)  ;
 				newPoint2.transform.parent=hit.collider.gameObject.transform;
+				newPoint2.transform.position += newPoint2.transform.localPosition.normalized;
 				AddVertexInRope(newPoint2.transform,RopeVertexes.Count);
 
 				} 
@@ -167,7 +168,7 @@ var direction:Vector3 = new Vector3();
 		
 		for( var i : int = RopeVertexes.Count-1 ; i > 0;i--){
 			if(i == (RopeVertexes.Count-1)){
-				  point1 = muzzleTransform.transform.position;
+				  point1 = movement.transform.position;
 				  point2 = RopeVertexes[i].position;
 				  point3 = RopeVertexes[i-1].position;
 				  direction = (point1 - point3);
@@ -178,7 +179,7 @@ var direction:Vector3 = new Vector3();
 
 				  //Debug.DrawLine(point1 - direction/10,point3,Color.black,1);
 
-			if((!Physics.Linecast(point1  - direction/10,point3,hit ) || Vector3.Distance(hit.point,point3)<hit_slack_distance)){
+			if((!Physics.Linecast(point1,point3+direction.normalized*2,hit ) || Vector3.Distance(hit.point,point3)<hit_slack_distance)){
 				Destroy(RopeVertexes[i].gameObject);
 				RopeVertexes.RemoveAt(i);
 
@@ -197,7 +198,7 @@ var direction:Vector3 = new Vector3();
 				 if(Mathf.Abs(total_dist-min_dist) < (total_dist*min_middle_proximity ) ){
 
 				 //Debug.DrawLine(point1 - direction/10,point3,Color.yellow,1);
-			if( ( (!Physics.Linecast(point1  - direction/10,point3,hit ) || Vector3.Distance(hit.point,point3)<hit_slack_distance) )  ){
+			if( ( (!Physics.Linecast(point1,point3+direction.normalized*2,hit ) || Vector3.Distance(hit.point,point3)<hit_slack_distance) )  ){
 
 					//print("Removing 3");
 
@@ -216,7 +217,7 @@ var direction:Vector3 = new Vector3();
 	
 	 if(RopeVertexes.Count == 2){
 	
-			point1  = muzzleTransform.transform.position;
+			point1  = movement.transform.position;
 			point2  = RopeVertexes[1].position;
 			point3  = RopeVertexes[0].position;
 			total_dist = Vector3.Distance(point1,point2) + Vector3.Distance(point2,point3);
@@ -255,7 +256,7 @@ function calculateRopeLengths(){
 		
 		totalRopeLength+=Vector3.Distance(Point1,Point2);
 	} 
-	hangingRope =Vector3.Distance(RopeVertexes[RopeVertexes.Count-1].position,muzzleTransform.transform.position);
+	hangingRope =Vector3.Distance(RopeVertexes[RopeVertexes.Count-1].position,movement.transform.position);
 	 
 	totalRopeLength+=hangingRope;
 	nonHangingRope = totalRopeLength - hangingRope;
@@ -327,7 +328,7 @@ function FixedUpdate () {
     			line.SetPosition(j, muzzleTransform.position);
 			}else{
 				KillBulletProcess();
-				this.gameObject.active=false;	
+				this.gameObject.SetActive(false);	
 			}		
 		}
 	}	
@@ -380,7 +381,7 @@ function Shoot(){
     bulletLive = true;
     line.enabled = true;
     aimLocationForLine = muzzleTransform.position;
-	tipScript = bullet.GetComponent("HookShotTipScript");
+	tipScript = bullet.GetComponent.<HookShotTipScript>();
 	audio.PlayOneShot(FireSound);
 	timeAtShot = Time.time;
 
@@ -391,10 +392,10 @@ function Shoot(){
 function Start () {
 	line = gameObject.GetComponent(LineRenderer); 
 	line.SetVertexCount(1);
-	movement = GameObject.Find("Player").GetComponent("PlayerMovement");	
+	movement = GameObject.Find("Player").GetComponent.<PlayerMovement>();	
 	soundSource = gameObject.AddComponent(AudioSource);
 	soundSource.rolloffMode = AudioRolloffMode.Linear;
-	cameraa = GameObject.Find("Camera Rig").GetComponent("Camera");
+	cameraa = GameObject.Find("Camera Rig").GetComponent.<Camera>();
 	muzzleTransform = transform.Find("Muzzle");
 	retical = movement.GetRetical();
 	

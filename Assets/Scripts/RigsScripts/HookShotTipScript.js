@@ -18,7 +18,7 @@ function Start () {
 	player = GameObject.Find("Player");
 	movement = GameObject.Find("Player").GetComponent(PlayerMovement);
 	rigid = GetComponent(Rigidbody);
-	gun = GameObject.Find("HookShot").GetComponent("HookShotScript");
+	gun = GameObject.Find("HookShot").GetComponent.<HookShotScript>();
 	Physics.IgnoreCollision(gameObject.collider,player.collider);
 	
 	
@@ -71,7 +71,7 @@ function Update () {
 		if(Physics.Linecast(player.transform.position, transform.position, hit,layerMask)){
 			if(!hit.collider.tag.Equals("1DMG")){
 			transform.position = hit.collider.ClosestPointOnBounds(transform.position);
-			SetTipIsStuck(transform);
+			SetTipIsStuck();
 			transform.parent = hit.collider.transform; 
 				
 			}else{
@@ -91,37 +91,29 @@ function letGo(){
 
 }
 
-function OnTriggerEnter(hit:Collider){
-	if(hit.collider.tag.Contains("Player")){
-	}else{
-		if(!hit.collider.tag.Equals("1DMG") && !hit.gameObject.GetComponent("PBCameraZone") && !hit.gameObject.tag.Equals("CheckPoint")&& !hit.gameObject.tag.Equals("Pickup")){
 
-			transform.position = hit.collider.ClosestPointOnBounds(transform.position) ;
-			SetTipIsStuck(transform);
-			transform.parent = hit.collider.transform; 
-				
-		}
-
-	}
-}
 function OnCollisionEnter(hit : Collision){
+if(this.transform!=null && player !=null){
+
 	if(hit.collider.tag.Contains("Player")){
 	}else{
 		if(!hit.collider.tag.Equals("1DMG") && !hit.collider.gameObject.GetComponent("PBCameraZone") && !hit.collider.gameObject.tag.Equals("CheckPoint")&& !hit.collider.gameObject.tag.Equals("Pickup")){
-
 			transform.position = hit.collider.ClosestPointOnBounds(transform.position) + hit.contacts[0].normal ;
-			SetTipIsStuck(transform);
+			SetTipIsStuck();
 			transform.parent = hit.collider.transform; 
-				
+				}
 		}
 
 	}
 }
 
 
-function SetTipIsStuck(pos : Transform){
+function SetTipIsStuck(){
+	
+	
 	isStuck = true;
-	gun.SetHookIsStuck(true,pos,Vector3.Distance(player.transform.position, transform.position));
+		gun.SetHookIsStuck(true,this.transform,Vector3.Distance(player.transform.position, transform.position));
 	Destroy(rigidbody);
-	Destroy(this.collider);
+	
+Destroy(this.collider);
 }

@@ -40,14 +40,14 @@ function Start () {
 	if(PlayerPrefs.GetInt("TrackingDartUnlocked",0)==1){
 		markerUnlocked = true;
 	}
-	aimingArea = GameObject.Find("AimArea").GetComponent("AimArea");
+	aimingArea = GameObject.Find("AimArea").GetComponent.<AimArea>();
 	soundSource = gameObject.AddComponent(AudioSource);
 	soundSource.rolloffMode = AudioRolloffMode.Linear;
 	cameraa = Component.FindObjectOfType(Camera);
 	muzzleTransform = transform.Find("Barrel/Muzzle");
 	player = GameObject.Find("Player");
 	line.SetVertexCount(2);
-	movement = player.GetComponent("PlayerMovement");
+	movement = player.GetComponent.<PlayerMovement>();
 	retical = movement.GetRetical();
 
 }
@@ -74,7 +74,7 @@ function GetState(){
 	//It must be Selected in Menu- Then Equipped For AimingMode - then Usable by GameMode - Then If it has background Application it Must have a Resting State!(HookShot,Wings)
 }
 
-function Update () {
+function LateUpdate () {
 	if(!readyToShoot2 && !movement.getIsFire2ing()){
 		readyToShoot2 = true;
 		holdShoot2 = 0;
