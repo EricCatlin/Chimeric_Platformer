@@ -11,7 +11,7 @@ var range : float = 20;
 var move_dist : float = 0.5;
 function Start(){
 	startingPos = transform.position;
-	player = GameObject.Find("Player").GetComponent("PlayerMovement");
+	player = GameObject.Find("Player").GetComponent.<PlayerMovement>();
 }
 
 function FixedUpdate () {

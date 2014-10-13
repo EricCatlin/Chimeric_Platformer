@@ -62,7 +62,7 @@ function MoveObject (thisTransform : Transform, startPos : Vector3, endPos : Vec
 
 function SwitchEventRecieved(object: GameObject){
  	var other : GameObject = object; 
- 	var otherScript : SwitchBehavior = other.GetComponent("SwitchBehavior");
+ 	var otherScript : SwitchBehavior = other.GetComponent.<SwitchBehavior>();
 	isActive = otherScript.GetState();
 	print(isActive);
 	
