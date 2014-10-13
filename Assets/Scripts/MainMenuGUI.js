@@ -21,7 +21,7 @@ function OnGUI(){
 				Application.LoadLevel("Tutorial 1");
 			}if(GUI.Button(Rect (Screen.width/2,Screen.height/2-Screen.height/4+100,200,100),"Skip")){
 				PlayerPrefs.SetInt("Beat Tutorial 1",1);
-				PlayerPrefs.SetInt("CheckPointRigUnlocked",1);
+				//PlayerPrefs.SetInt("CheckPointRigUnlocked",1);
 				Application.LoadLevel(Application.loadedLevel);
 			}
 
