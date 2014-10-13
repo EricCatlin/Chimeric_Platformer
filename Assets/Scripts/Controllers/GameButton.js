@@ -2,7 +2,7 @@
 private var movement : PlayerMovement;
 private var ready : boolean = false;
 function Start () {
-	movement = GameObject.Find("Player").GetComponent("PlayerMovement");
+	movement = GameObject.Find("Player").GetComponent.<PlayerMovement>();
 }
 function Update() {
 

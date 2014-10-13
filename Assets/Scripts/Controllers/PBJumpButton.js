@@ -1,7 +1,7 @@
 #pragma strict
 private var movement : PlayerMovement;
 function Start () {
-	movement = GameObject.Find("Player").GetComponent("PlayerMovement");
+	movement = GameObject.Find("Player").GetComponent.<PlayerMovement>();
 }
 
 function Update() {

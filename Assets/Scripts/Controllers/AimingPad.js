@@ -6,11 +6,11 @@ private var center : Vector3;
 private var GUIControler : ControllerUI; 
 
 function Start () {
-	movement = GameObject.Find("Player").GetComponent("PlayerMovement");
+	movement = GameObject.Find("Player").GetComponent.<PlayerMovement>();
 	retical = movement.GetRetical();
-	reticalScript = retical.GetComponent("ReticalScript");
+	reticalScript = retical.GetComponent.<ReticalScript>();
 	center = Vector3.zero;
-	GUIControler = GameObject.Find("Level Essentials").GetComponent("ControllerUI");
+	GUIControler = GameObject.Find("Level Essentials").GetComponent.<ControllerUI>();
 
 }
 function setCenter(newCenter:Vector3){

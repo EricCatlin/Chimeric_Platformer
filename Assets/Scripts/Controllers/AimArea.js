@@ -26,12 +26,12 @@ private var AimInterceptor : GameObject;
 private var hitsArray : int[] = new int[2];
 
 function Start () {
-	movement = GameObject.Find("Player").GetComponent("PlayerMovement");
+	movement = GameObject.Find("Player").GetComponent.<PlayerMovement>();
 	retical = movement.GetRetical();
-	reticalScript = retical.GetComponent("ReticalScript");
-	GUIController = GameObject.Find("Level Essentials").GetComponent("ControllerUI");
+	reticalScript = retical.GetComponent.<ReticalScript>();
+	GUIController = GameObject.Find("Level Essentials").GetComponent.<ControllerUI>();
 	cam = GameObject.FindObjectOfType(Camera);
-	camScript = cam.GetComponent("CameraFollowBetter");
+	camScript = cam.GetComponent.<CameraFollowBetter>();
 	gameButton = GameObject.Find("GameButton");
 	menuButton = GameObject.Find("MenuButton");
 	AimInterceptor = GameObject.Find("AimInterceptor");

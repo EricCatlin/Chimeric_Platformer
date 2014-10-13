@@ -13,7 +13,12 @@ private var movement : PlayerMovement;
  var AimState   : GameObject;
  var GameState  : GameObject;
  var MenuState  : GameObject;
- 
+ var Checkpoint  : GameObject;
+  var Portal  : GameObject;
+   var Hook  : GameObject;
+    var Wing  : GameObject;
+     var Gun  : GameObject;
+
 
 
 
@@ -42,7 +47,7 @@ function getRightButton(){
 	return right;
 }
 function Start () {
-	movement = GameObject.Find("Player").GetComponent("PlayerMovement");
+	movement = GameObject.Find("Player").GetComponent.<PlayerMovement>();
 	MenuState.SetActive(true);
 	AimState.SetActive(!movement.getPCDebugging());	
 	GameState.SetActive(!movement.getPCDebugging());	
@@ -71,7 +76,30 @@ function Start () {
 	//AimState.guiText.material.color=Color.black;
 	//AimState.guiText.pixelOffset.x = AimState.guiTexture.pixelInset.x;
 	//AimState.guiText.pixelOffset.y = Screen.height;
+Checkpoint.guiTexture.pixelInset.x=Screen.width/15;
+Checkpoint.guiTexture.pixelInset.y=Screen.height - Screen.width/15;
+Checkpoint.guiTexture.pixelInset.width=Screen.width/15;
+Checkpoint.guiTexture.pixelInset.height=Screen.width/15;
 
+Portal.guiTexture.pixelInset.x=Screen.width/15*2;
+Portal.guiTexture.pixelInset.y=Screen.height - Screen.width/15;
+Portal.guiTexture.pixelInset.width=Screen.width/15;
+Portal.guiTexture.pixelInset.height=Screen.width/15;
+
+Gun.guiTexture.pixelInset.x=Screen.width/15*3;
+Gun.guiTexture.pixelInset.y=Screen.height - Screen.width/15;
+Gun.guiTexture.pixelInset.width=Screen.width/15;
+Gun.guiTexture.pixelInset.height=Screen.width/15;
+
+Hook.guiTexture.pixelInset.x=Screen.width/15*4;
+Hook.guiTexture.pixelInset.y=Screen.height - Screen.width/15;
+Hook.guiTexture.pixelInset.width=Screen.width/15;
+Hook.guiTexture.pixelInset.height=Screen.width/15;
+
+Wing.guiTexture.pixelInset.x=Screen.width/15*5;
+Wing.guiTexture.pixelInset.y=Screen.height - Screen.width/15;
+Wing.guiTexture.pixelInset.width=Screen.width/15;
+Wing.guiTexture.pixelInset.height=Screen.width/15;
 
 }
 
@@ -152,7 +180,7 @@ if(movement!=null){
 	aimArea.guiTexture.pixelInset.height = (Screen.height/2);
 	}
 	}else{
-		movement = GameObject.Find("Player").GetComponent("PlayerMovement");
+		movement = GameObject.Find("Player").GetComponent.<PlayerMovement>();
 		standardAimArea();
 	}
 
