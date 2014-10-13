@@ -19,7 +19,7 @@ private var thisRect : Rect;
 
 function Start () {
 	thisRect = Rect(Screen.width/6,Screen.height-Screen.height*.3	,Screen.width-Screen.width/3,Screen.height*.1);
-	movement = GameObject.Find("Player").GetComponent("PlayerMovement");
+	movement = GameObject.Find("Player").GetComponent.<PlayerMovement>();
 	cam = GameObject.FindObjectOfType(Camera);
 
 }
@@ -71,9 +71,9 @@ GUI.Box(thisRect,"");
 
 
 if(GUIMessage == 0){
-	GUI.Label(thisRect, "So you beat tutorial 1? Better keep my eyes on you... ");
+	GUI.Label(thisRect, "So you beat tutorial 1... Good for you.");
 }else if(GUIMessage == 1){
-	GUI.Label(thisRect, "EQUIP your SAVE SPOT from SELECT KIT in the MENU (ESCAPE)");
+	GUI.Label(thisRect, "Checkpoint Equipped! Checkpoints are where you will respawn if you die. Select them again later by clicking the symbol in the top-left of your screen");
 
 }else if(GUIMessage == 2){
 	GUI.Label(thisRect, "PLACE a CHECKPOINT with LEFT-CLICK. If you happen to die, you will instantly teleport back to this CHECKPOINT");

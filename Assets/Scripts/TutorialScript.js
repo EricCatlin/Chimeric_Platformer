@@ -14,12 +14,18 @@ private var EndOfSection1Hit :boolean =false;
 private var LastSlideCubeHit : boolean = false;
 private var HighWallJumpCubeHit : boolean = false;
 private var InvisibleCubeHit : boolean = false;
+private var FiftyFiveHit : boolean = false;
+
 private var HighWallJumpCube2Hit : boolean = false;
 private var LeftJumpCube : GameObject;
 private var RightJumpCube : GameObject;
 private var RightRunJumpCube : GameObject;
 private var LeftWallJumpCube : GameObject;
 private var RightWallJumpCube : GameObject;
+private var FiftyFive : GameObject;
+
+private var Plug : GameObject;
+
 private var EndOfSection1 : GameObject;
 private var SecondRightWall : GameObject;
 private var HighWallJumpCube : GameObject;
@@ -28,6 +34,8 @@ private var firstWall : GameObject;
 private var SafteyNet : GameObject;
 private var thisRect : Rect;
 private var GUIMessage : int = 0;
+
+private var event_recieved :boolean = false;
 
 function Start () {
 		thisRect = Rect(Screen.width/6,Screen.height-Screen.height*.3	,Screen.width-Screen.width/3,Screen.height*.1);
@@ -39,8 +47,11 @@ function Start () {
 		RightWallJumpCube = GameObject.Find("RightWallJumpCube");
 		EndOfSection1= GameObject.Find("EndOfSection1");
 		SecondRightWall = GameObject.Find("SecondRightWall");
+		FiftyFive = GameObject.Find("5");
+
 		HighWallJumpCube = GameObject.Find("HighWallJumpCube");
 		HighWallJumpCube2 = GameObject.Find("HighWallJumpCube2");
+		Plug = GameObject.Find("Plug");
 		SafteyNet = GameObject.Find("SafteyNet");
 		LeftJumpCube.SetActive(false);
 		RightJumpCube.SetActive(false);
@@ -51,7 +62,8 @@ function Start () {
 		HighWallJumpCube.SetActive(false);
 		SafteyNet.SetActive(false);
 		HighWallJumpCube2.SetActive(false);
-		SecondRightWall.SetActiveRecursively(false);
+		SecondRightWall.SetActive(false);
+		
 }
 
 function Update () {
@@ -72,8 +84,14 @@ function Update () {
 		RightRunJumpCube.SetActive(true);
 		GUIMessage = 2;
 	}
+	if(FiftyFiveHit){
+	FiftyFiveHit = false;
+		
+		GUIMessage = 2;
+	}
 	if(RightRunJumpCubeHit){
 		RightRunJumpCubeHit = false;
+		Plug.SetActive(false);
 		LeftWallJumpCube.SetActive(true);
 		RightWallJumpCube.SetActive(true);
 		GUIMessage = 3;
@@ -81,7 +99,7 @@ function Update () {
 	if(RightWallJumpCubeHit && LeftWallJumpCubeHit){
 		LeftWallJumpCubeHit = false;
 		EndOfSection1.SetActive(true);
-		//End.SetActiveRecursively(true);
+		//End.SetActive(true);
 		GUIMessage = 4;
 	
 	}
@@ -109,11 +127,12 @@ function Update () {
 	}
 	if(HighWallJumpCube2Hit){
 		HighWallJumpCube2Hit  = false;
-	//	End.SetActiveRecursively(true);
+	//	End.SetActive(true);
 		GUIMessage = 9;
 	}
 }
 function SwitchEventRecieved(object: GameObject){
+event_recieved = true;
 gameObject.audio.Play();
 if(object.name.Equals("RightRunCube")){
 	RightRunCubeHit = true;
@@ -135,42 +154,50 @@ if(object.name.Equals("RightRunCube")){
 	LastSlideCubeHit = true;
 }else if(object.name.Equals("HighWallJumpCube")){
 	HighWallJumpCubeHit = true;
-}else if(object.name.Equals("InvisibleCube")){
+}else if(object.name.Equals("InvisibleSaftey")){
 	InvisibleCubeHit = true;
 }else if(object.name.Equals("HighWallJumpCube2")){
 	HighWallJumpCube2Hit = true;
+}else if(object.name.Equals("5")){
+	FiftyFiveHit = true;
 }
 	
 }
 
 function OnGUI(){
+
+if(event_recieved){
+	GUI.contentColor = Color.red;
+	event_recieved = false;
+}
+
+
 if(Screen.currentResolution.width > 1000){
 		GUI.skin.label.fontSize = 26;
-		GUI.backgroundColor = Color.black;
 		
-		GUI.contentColor = Color.green;
+		
+		
 		GUI.Box(thisRect,"");
 
 	}else{
 		GUI.skin.label.fontSize = 14;
-GUI.color = Color.green;
-GUI.Box(thisRect,"");
+		GUI.Box(thisRect,"");
 
 
 		}
-
+		GUI.contentColor = Color.Lerp(GUI.contentColor,Color.green,0.71);
 
 
 if(GUIMessage == 0){
 	GUI.Label(thisRect, "Welcome to GenericPlatformer! Press LEFT and RIGHT to RUN. Ram Into The BLUEBOXES to advance.");
 }else if(GUIMessage == 1){
-	GUI.Label(thisRect, "TAP JUMP to HOP, HOLD JUMP to JUMP higher. You're Character turns green while JUMPING");
+	GUI.Label(thisRect, "TAP JUMP to HOP, HOLD JUMP to JUMP higher. RUN to JUMP even higher. ");
 
 }else if(GUIMessage == 2){
-	GUI.Label(thisRect, "The faster you are running, the higher you JUMP");
+	GUI.Label(thisRect, "You can WALL JUMP. You can only wall jump while touching the wall, so JUMP before moving away from the wall");
 
 }else if(GUIMessage == 3){
-	GUI.Label(thisRect, "You can WALL JUMP");
+	GUI.Label(thisRect, "As you progress, you will UNLOCK lots of cool tools that add abilities.");
 
 }else if(GUIMessage == 4){
 	GUI.Label(thisRect, "Righto, now go up to the left to advance");

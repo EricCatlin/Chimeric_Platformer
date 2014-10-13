@@ -19,7 +19,7 @@ private var thisRect : Rect;
 
 function Start () {
 thisRect = Rect(Screen.width/6,Screen.height-Screen.height*.3	,Screen.width-Screen.width/3,Screen.height*.1);
-	movement = GameObject.Find("Player").GetComponent("PlayerMovement");
+	movement = GameObject.Find("Player").GetComponent.<PlayerMovement>();
 	cam = GameObject.FindObjectOfType(Camera);
 
 }
