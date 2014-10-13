@@ -27,6 +27,7 @@ var teleportingSound : AudioClip;
 var WingFlap : AudioClip;
 var retical : GameObject;
 var PCDebugging : boolean = true;
+var line_material :Material;
 
 public var isPressingLeft : boolean;
 public var isPressingRight : boolean;
@@ -39,6 +40,12 @@ public var gameControls : GameObject;
 public var isInAimMode : boolean;
 public var isInMenuMode : boolean;
 public var isInGameMode :boolean;
+
+public var floor_ray : RaycastHit = new RaycastHit() ;
+
+public var left_ray : RaycastHit = new RaycastHit() ;
+public var right_ray : RaycastHit = new RaycastHit() ;
+public var	staticFrame : Vector3;
 
 //Portals
 public var isTeleportingTo1 : boolean;
@@ -82,11 +89,10 @@ public var isJumping : boolean;
 public var letGoOfJump : boolean;
 public var isRunning : boolean;
 public var isAirborn : boolean;
-public var collisionAngle : Vector3 = Vector3(0,1,0);
 public var isOnLeftWall : boolean = false;
 public var isOnRightWall : boolean = false;
 public var isWallJumping : boolean = false;
-public var wallJumpingTime : float;
+public var jumpingTime : float;
 public var lastTimeOnWall : float;
 public var timeTouchingSomething : float;
 public var timeTouchingTheFloor : float;
@@ -123,10 +129,8 @@ public var time : float;
 public var timeAtStart : float;
 public var tryingToLetGoOfJump : boolean;
 
-public var addstaticFrame : boolean;
-public var	staticFrame : Vector3;
 
-
+public var invuln : int = 0;
 //BodyComponents
 public var controller : Rigidbody;
 public var GUIController : ControllerUI;
@@ -150,20 +154,17 @@ public var  endOfLevelBox : Rect ;
 
 
 function Start(){
-	//movementJoy = GameObject.Find("MovementJoystick").GetComponent("MovementJoystick");
 	if (Application.platform == RuntimePlatform.Android)
         PCDebugging=false;
     else
     	PCDebugging = true;
-
 	print(Application.loadedLevelName);
 	dust = GameObject.Find("Dust").GetComponent(ParticleSystem);
 	messageRect	= Rect(Screen.width/2-200,0,400,200);
 	hook = HookShotRig.GetComponent("HookShotScript");
 	Time.timeScale=1;
 	GUIController = GameObject.Find("Level Essentials").GetComponent("ControllerUI");
-		score_display = GameObject.Find("Level Essentials").GetComponent("GUIText");
-
+	score_display = GameObject.Find("Level Essentials").GetComponent("GUIText");
 	timeAtStart = Time.time;
 	controller = GetComponent(Rigidbody);
 	trail = GameObject.Find("Trail").GetComponent(TrailRenderer);
@@ -178,336 +179,132 @@ function Start(){
 	endOfLevelBox = Rect(0,Screen.height - Screen.height*.33,Screen.width,Screen.height*.33);
 	EnterGameMode();
 }
-function getActiveRig(){
-	return PlayerPrefs.GetString("Rig");
-}
-function populateSpeedArray(){
- 	if(speedCounter == 1){
-    	speedCounter = 2;
-    }else if(speedCounter == 2){
-    	speedCounter = 3;
-    }else{
-    speedCounter = 1;
-    }
-    if(vectorArray == null || vectorArray.Length<4) vectorArray = new Vector3[4];
-    vectorArray[speedCounter] = currSpeed;
-     if(speedArray == null || speedArray.Length<4) speedArray = new float[4];
-    speedArray[speedCounter] = currSpeed.magnitude;
-}
-function getHighestSpeed(){
-	return Mathf.Max(speedArray);
-}
-function getHighestVector(){
-	var highest : float = 0;
-	var indexOfHighest: float = 0;
-	for (var i : int = 0; i < 4; i++){
-		if(highest < vectorArray[i].magnitude){
-			indexOfHighest = i;
-			highest = vectorArray[i].magnitude;
-		}
-	}
-	return vectorArray[indexOfHighest];
-}
-
-function checkForFlags(){
-	if(startingCheckPointFlag){
-		checkPointScript.setCheckPoint();
-		startingCheckPointFlag = false;
-	}
-
-}
-function getPCDebugging(){
-	return PCDebugging;
-}
 function FixedUpdate() {
+	if(invuln>0)invuln--;
 	body.renderer.material.color = Color.Lerp(body_main_color,body.renderer.material.color,0.92f);
 	score_display.text = "SCORE: "+score;
 	checkForFlags(); // flags are one time use conditions to be run before the update so sayeth me
 	if(!gameIsPaused){
-
-	//print("Current Speed " + currSpeed);
 	transform.position.z=0;
-
 	currSpeed = controller.velocity;  //1:Get Velocity going into this frame
 	populateSpeedArray();
-	//}
-	//////////print("1  "+moveDirection);
-	if(isTouchingSomething){ // 2:Get your position in the world, What you are doing, touching
-		whatAmITouching();
-	}
 	getInputs();//3:Get what the user is trying to do this frame
-	if(hookShotIsStuck){
-		if(Vector3.Distance(transform.position,hookShotLocation)>=hookShotLength){
-			isHanging = true;
-		}else{
-			isHanging = false;
-		}
-	}else{
-		isHanging = false;
-	}
-	handleHorizontal(); //4:Apply LeftRight Movements
-	//////////print("1  "+currSpeed);
+	whatAmITouching();
+	applyGravity();
+	DoAnimation();
 
+	handleHorizontal(); //4:Apply LeftRight Movements
 	handleJumps();//5: Apply Up down movements
-	////////print("2  "+currSpeed);
 	if(!dead){
    	 	if((isTeleportingTo1 || isTeleportingTo2) && applyingTeleportVelocity){
-   	 		//////////print("is");
    	 		applyingTeleportVelocity = false;
    	 		currSpeed = teleportedVelocity;
    		 	moveDirection = teleportedVelocity;
-   		 	//////print("TPPPPPPPPPPPPPfggggggggggggggggggggggggggggggggggggggggPPPPPPPP  "+moveDirection);
 			isTeleporting = true;
    	 	}
    	 	if(isTeleporting){
    	 		if(hookShotIsStuck){
    	 			LetGoHookShot();
-
 				hook.letGo();
 			}
-
    	 		trail.time = 0;
    	 		JumpSoundSource.PlayOneShot(teleportingSound);
    	 		isTeleporting = false;
-
    	 		isTouchingFloor = false;
    	 		isAirborn = true;
-
    		}else{
-			applyGravity();
 			currSpeed.z=0;
    	 		moveDirection = currSpeed;
 		}
-		if(isHanging){ //transform left right up downs
-		//////////print("hang  "+moveDirection);
-
+		if(isHanging){ 
 			moveDirection = HangMovementTransformation(moveDirection);
 		}
-   		 //	////////print("3  "+moveDirection);
-
-
 		if(isExitingPause>0){
-			//print("ExitingPause" + pauseVelocity);
 			moveDirection = pauseVelocity;
-			//controller.Move(pauseVelocity);
 			isExitingPause--;
 		}
 		moveDirection = transform.TransformDirection( moveDirection );
    	 	controller.rigidbody.velocity =(moveDirection);
     }
-    if(WingsEquipped){
+    
+    }
+    staticFrame = Vector3.zero;
+}
+function DoAnimation(){
+	if(WingsEquipped){
   	  doWingAnimation();
   	  LeftWing.transform.localScale.x = ((wingHops+1)/7.0);
       RightWing.transform.localScale.x = ((wingHops+1)/7.0);
-  	 
     }
+    if(isAirborn){
+            body.rotation.eulerAngles.z = 0;
+    }else if(isTouchingFloor){
+        body.rotation.eulerAngles.z = 0;
+    }else if(isOnLeftWall){
+    	if(isOnRightWall){
+    	 	body.rotation.eulerAngles.z = 0;
+    	}else{
+    	 	body.rotation.eulerAngles.z = -left_ray.normal.x*60- (rigid.velocity.y/jumpMax * 30);
+    	}
+    }else if(isOnRightWall){
+    	body.rotation.eulerAngles.z = -right_ray.normal.x*60+ (rigid.velocity.y/jumpMax * 30);;
     }
-    staticFrame = Vector3.zero;
-    collisionPoints = new Array();
-}
-function setIsPressingLeft(bool:boolean){
-	isPressingLeft = bool;
-}
-function getIsPressingLeft(){
-	return isPressingLeft;
-}
-function getIsPressingRight(){
-	return isPressingRight;
-}
-function setIsPressingRight(bool:boolean){
-	isPressingRight = bool;
-}
-function getIsPressingJump(){
-	return isJumping;
+    if(isTouchingFloor && Mathf.Abs(currSpeed.x-staticFrame.x) > 0.3 ){
+	    var line = new GameObject();
+		var rend :  LineRenderer = 	line.AddComponent(LineRenderer);
+		rend.material = line_material;
+		rend.SetVertexCount(2);
+		rend.SetWidth(0.1,0.1);
+		rend.SetPosition(0, transform.position);
+		rend.SetColors(Color.green,Color.clear);
+		rend.SetPosition(1, transform.position -transform.up*2 -rigidbody.velocity.normalized);
+		Destroy(line.gameObject,.4);
+	}
 }
 
 function doWingAnimation(){
 	if(isStillJumping){
-		////print("1");
 		LeftWing.transform.rotation = Quaternion.RotateTowards(LeftWing.transform.rotation, Quaternion.EulerAngles(0,0,90),5*wingHops+5);
 		RightWing.transform.rotation = Quaternion.RotateTowards(RightWing.transform.rotation, Quaternion.EulerAngles(0,0,-90),5*wingHops+5);
 		}else{
-	//	//print("2");
 		LeftWing.transform.rotation = Quaternion.RotateTowards(LeftWing.transform.rotation, Quaternion.EulerAngles(0,0,45),10);
 		RightWing.transform.rotation = Quaternion.RotateTowards(RightWing.transform.rotation, Quaternion.EulerAngles(0,0,-45),10);
-
 		}
 		
 }
-function SetIsHanging(bool : boolean){
-	isHanging = bool;
-}
 
-function GetRetical(){
-	return retical;
 
-}
-function HangMovementTransformation(direction : Vector3){
-	var newDirection :Vector3 = Vector3.zero;
-	var distance = Vector3.Distance(transform.position,hookShotLocation);
-	var swinging : boolean = false;
-	if(distance > hookShotLength+2){
-		newDirection -= ((transform.position - hookShotLocation).normalized  * ((distance-hookShotLength)));
-		swinging = true;
-		//Debug.DrawLine(transform.position,transform.position + newDirection,Color.red,1.5);
-		
-			
-			
-			
 
-	}
-	if(swinging||(Vector3.Distance(transform.position + direction,hookShotLocation)) >= hookShotLength+2){
-		var between = ((transform.position) - hookShotLocation).normalized;
-		var rDirection = Vector3.Cross(Vector3.forward,between);
-					//Debug.DrawLine(transform.position,transform.position + rDirection*5,Color.black,2);
-
-		newDirection += Vector3.Project(direction,rDirection);
-		if(newDirection.magnitude > runSpeed){
-			newDirection.Scale(Vector3(1,.995,0));
-		//	Debug.DrawLine(transform.position,transform.position + newDirection,Color.black,2);
-	
-		}
-				//	Debug.DrawLine(transform.position,transform.position + newDirection,Color.blue,1);
-	swinging = true;
-		
-		//////////print("1" + newDirection);
-	}
-
-	if(swinging){
-		var line = new GameObject();
-		var rend :LineRenderer = 	line.AddComponent(LineRenderer);
-		rend.material = new Material (Shader.Find("Particles/Multiply"));
-		rend.SetVertexCount(2);
-		rend.SetWidth(0.5,0.1);
-		rend.SetPosition(0, transform.position-transform.up);
-		rend.SetColors(Color.blue,Color.clear);
-		rend.SetPosition(1, transform.position -transform.up + newDirection/10);
-		Destroy(line,2);
-	}
-		
-		
-		
-	if(newDirection==Vector3.zero) return direction;
-	return newDirection;
-}
-function applyGravity(){
-	if(currSpeed.y > -140){
-
-    if(isOnLeftWall||isOnRightWall){
-    	if(currSpeed.y < -10){
-    		currSpeed.y = currSpeed.y/1.02;
-    	}else if(isOnLeftWall){
-    		currSpeed -= Vector3.Cross(collisionAngle,Vector3.back)*0.7* gravity * Time.fixedDeltaTime;
-		}else if(isOnRightWall){
-    		currSpeed -= Vector3.Cross(collisionAngle,Vector3.forward)*0.7* gravity * Time.fixedDeltaTime;
-		}
-    //apply gravityies
-    }else if(isStillJumping){
-    	currSpeed.y -= 0.5*gravity * Time.fixedDeltaTime;
-
-    }else{
-    	currSpeed.y -= gravity * Time.fixedDeltaTime;
-    }
-    //add extra gravity if user wants it
-    if(isPressingDown){
-    	currSpeed.y -= gravity * Time.fixedDeltaTime;
-    }
-
-    }else{
-    //////////print(currSpeed.y);
-    }
-}
-function GetReticalActive(){
-	return retical.active;
-}
-function SetReticalActive(bool : boolean){
-	retical.SetActive(bool);
-}
-function setAimSpot(pos: Vector3){
-	aimSpot = pos;
-}
-function getAimSpot(){
-	return aimSpot;
-}
 
 function handleJumps(){
-	if (isRunning){
-		jumpMax = runJump + System.Math.Abs(currSpeed.x)*0.3;
-	}else{
-		jumpMax = walkJump+ System.Math.Abs(currSpeed.x)*0.3;
-	}
+	
+	jumpMax = walkJump+ (System.Math.Abs(currSpeed.x)+1)*0.4 ;
+
 	if(isJumping){
-	var initialSpeed : Vector3 = currSpeed;
-	addstaticFrame = false;
-	if ( isTouchingFloor) {
-		print(currSpeed.y);
+	
+	if ( isTouchingFloor || isOnLeftWall || isOnRightWall) {
+		jumpingTime=Time.time;
+
     	isStillJumping = true;
-    	isAirborn = true;
-    	isTouchingFloor = false;
-		currSpeed.y += collisionAngle.y*jumpMax;
-		currSpeed.x += collisionAngle.x*jumpMax;
+		currSpeed += body.transform.up*jumpMax;
        	JumpSoundSource.PlayOneShot(jumpClip);
        	dust.emissionRate=getHighestSpeed()*2;
-    		dust.Play();
+    	dust.Play();
 		body.renderer.material.color = body_active_color;
 
-///////////////////////////Horizontal Aspect of Wall Jump
-    }else if(isOnLeftWall){
-    	isWallJumping = true;
-    	isOnLeftWall = false;
-    }else if(isOnRightWall){
-    	isWallJumping = true;
-    	isOnRightWall = false;
-    }
-    if(isWallJumping){
-    	wallJumpingTime = Time.time;
-		//////////////////////////Vertical PArt
-		//print("1");
-    	JumpSoundSource.PlayOneShot(wallJumpClip);
-    	dust.emissionRate=getHighestSpeed();
-
-    		dust.Play();
-		body.renderer.material.color = body_active_color;
-
-    	isStillJumping = true;
-    	isWallJumping = false;
-    	isAirborn = true;
-    	isTouchingSomething=false;
-    	currSpeed.x += 0.9*jumpMax * collisionAngle.x;
-    	////print(collisionAngle.x);
-    	if(currSpeed.y < 5){
-    		//print("2");
-			currSpeed.x += 0.1*jumpMax * collisionAngle.x;
-    		currSpeed.y =  0.4 * jumpMax;
-    	}else if(currSpeed.y < jumpMax){
-    		//print("3");
-    		currSpeed.y +=  0.33 * jumpMax;
-    	}else{
-    			//print("4");
-    		currSpeed.y = 0.9  * currSpeed.y;
-    	}
     }else if(isAirborn && WingsEquipped &&isJumping &&  Time.time - timeTouchingSomething > 0.1 ){
     	if(  wingHops > 0 ){
     		currSpeed.y += ((jumpMax/7) * (wingHops)) + Mathf.Abs(currSpeed.x)/10;
     		wingHops--;
 			JumpSoundSource.PlayOneShot(WingFlap);
-			
 		}
     	isStillJumping = true;
     }
-    	var line = new GameObject();
-		var rend :LineRenderer = 	line.AddComponent(LineRenderer);
-		rend.material = new Material (Shader.Find("Particles/Multiply"));
-		rend.SetVertexCount(2);
-		rend.SetWidth(0,1);
-		rend.SetPosition(0, transform.position-(currSpeed - initialSpeed)/20);
-		rend.SetColors(Color.green,Color.clear);
-		rend.SetPosition(1, transform.position +(Vector3.Lerp(currSpeed,currSpeed -  initialSpeed,0.5)/15));
-		Destroy(line,1);
     }
-	//Unjump(As in kill upwards momentum upon letting go of jump if upwards momentum is due to jumping)
-   	if(letGoOfJump  && !(isOnLeftWall||isOnRightWall)&&(Time.time - wallJumpingTime > .33)){
+   	if(letGoOfJump  && !(isOnLeftWall||isOnRightWall)&&(Time.time - jumpingTime > .2)){
    		letGoOfJump = false;
+   		isStillJumping = false;
+
     	if(currSpeed.y > 5){
    			currSpeed.y -= Mathf.Min(currSpeed.y/2, jumpMax/2);
    		}
@@ -519,101 +316,66 @@ function handleJumps(){
 
 
 function handleHorizontal(){
+if(Time.time - jumpingTime > .2){
 	var initialSpeed : Vector3 = currSpeed;
 	if (isRunning){
     	speedMax = runSpeed + staticFrame.x;
     }else{
    		speedMax = walkSpeed + staticFrame.x;
     }
-	if(isTouchingFloor){
-//	print("Static Frame : " + staticFrame);
+	if(!isAirborn){
 		if(Mathf.Abs(horizontalInput)  > 0.1){
-
-			if(currSpeed.x >staticFrame.x&& horizontalInput < 0){
-		//	print("Turning left");
-					currSpeed +=  Vector3.Cross(collisionAngle,Vector3.forward)*horizontalInput * accel*5;
+			//Touching something and adding input
+			if(isTouchingFloor){
+			if( horizontalInput < 0 && currSpeed.x >staticFrame.x){
+					currSpeed +=  Vector3.Cross(floor_ray.normal,Vector3.forward)*horizontalInput * accel*5;
 					dust.emissionRate=getHighestSpeed()*10;
     				dust.Play();
-			}else if(currSpeed.x <staticFrame.x&& horizontalInput > 0){
-			//print("Turning right");
-					currSpeed +=  Vector3.Cross(collisionAngle,Vector3.forward)*horizontalInput * accel*5;
+			}else if(horizontalInput > 0 && currSpeed.x <staticFrame.x ){
+					currSpeed +=  Vector3.Cross(floor_ray.normal,Vector3.forward)*horizontalInput * accel*5;
 					dust.emissionRate=getHighestSpeed()*10;
-
     		dust.Play();
-
 			}else if((currSpeed - staticFrame).magnitude <= speedMax){
-			//print("Running forward");
-				currSpeed += Vector3.Cross(collisionAngle,Vector3.forward)*horizontalInput * accel;
+				currSpeed += Vector3.Cross(floor_ray.normal,Vector3.forward)*horizontalInput * accel;
 			}
-			if(Mathf.Abs(currSpeed.x-initialSpeed.x)>.1){ 
-			var line = new GameObject();
-		var rend :LineRenderer = 	line.AddComponent(LineRenderer);
-		rend.material = new Material (Shader.Find("Particles/Multiply"));
-		rend.SetVertexCount(2);
-		rend.SetWidth(0.3,0.1);
-		rend.SetPosition(0, transform.position-(currSpeed - initialSpeed));
-		rend.SetColors(Color.green,Color.clear);
-		rend.SetPosition(1, transform.position +(currSpeed - initialSpeed)/2);
-		Destroy(line,.5);
-		}
-		}else{
-			
+			}else{
+				if( horizontalInput < 0 && currSpeed.x >staticFrame.x){
+					currSpeed +=  Vector3.Cross(floor_ray.normal,Vector3.forward)*horizontalInput * accel*5;
+					dust.emissionRate=getHighestSpeed()*10;
+    				dust.Play();
+			}else if(horizontalInput > 0 && currSpeed.x <staticFrame.x ){
+					currSpeed +=  Vector3.Cross(floor_ray.normal,Vector3.forward)*horizontalInput * accel*5;
+					dust.emissionRate=getHighestSpeed()*10;
+    		dust.Play();
+			}else if((currSpeed - staticFrame).magnitude <= speedMax){
+				currSpeed += Vector3.Cross(floor_ray.normal,Vector3.forward)*horizontalInput * accel;
+			}
+			}
 		
+		}else{ //Stopping from no input
 		 if(currSpeed.x-staticFrame.x >2){
-		//print("slowing right");
    			currSpeed.x -= (currSpeed.x-staticFrame.x) * 0.5;
    		}else if(currSpeed.x-staticFrame.x <-2){
-   			//	print("slowing left");
-
    			currSpeed.x -= (currSpeed.x-staticFrame.x) * 0.5;
    		}else{
-   			//	print("stopped");
-
     		currSpeed.x = staticFrame.x;
    		}
-   		if(Mathf.Abs(currSpeed.x-initialSpeed.x)>5){ 
-   		var line3 = new GameObject();
-		var rend3 :LineRenderer = 	line3.AddComponent(LineRenderer);
-		rend3.material = new Material (Shader.Find("Particles/Multiply"));
-		rend3.SetVertexCount(2);
-		rend3.SetWidth(.1,.1);
-		rend3.SetPosition(0, transform.position - transform.up*2+currSpeed/10);
-		rend3.SetColors(Color.black,Color.black);
-		rend3.SetPosition(1, transform.position+transform.up*2 +currSpeed/10);
-		Destroy(line3,.5);
    		}
-   		}
-   		
-	}else if(isAirborn){
-		if((Time.time - wallJumpingTime > .2)){
+	}else {
+		
 		if(Mathf.Abs(horizontalInput)  > 0.1){
 			if(currSpeed.x > 0 && horizontalInput < 0 ){
 				currSpeed.x += horizontalInput * accel*1.3;
 			}else if(currSpeed.x < 0 && horizontalInput > 0){
 				currSpeed.x += horizontalInput * accel*1.3;
-			}else if(isStillJumping && Mathf.Abs(currSpeed.x) < speedMax +.1*-currSpeed.y){
-				currSpeed.x += horizontalInput*accel;
-			}else if(Mathf.Abs(currSpeed.x) < speedMax){
-				currSpeed.x += horizontalInput*accel;
+			}else if(isStillJumping && Mathf.Abs(currSpeed.x) < speedMax/2 +.1*-currSpeed.y){
+				currSpeed.x += horizontalInput*accel/2;
+			}else if(Mathf.Abs(currSpeed.x) < speedMax/2){
+				currSpeed.x += horizontalInput*accel/2;
    			}
-   		if(Mathf.Abs(currSpeed.x-initialSpeed.x)>.1){ 
-   		var line2 = new GameObject();
-		var rend2 :LineRenderer = 	line2.AddComponent(LineRenderer);
-		rend2.material = new Material (Shader.Find("Particles/Multiply"));
-		rend2.SetVertexCount(2);
-		rend2.SetWidth(.3,0.0);
-		rend2.SetPosition(0, transform.position-currSpeed/10);
-		rend2.SetColors(Color.green,Color.clear);
-		rend2.SetPosition(1, transform.position +(Vector3.Lerp(currSpeed,currSpeed -  initialSpeed,0.5)/10));
-		Destroy(line2,2);
-		}
    		}
-   		}
-   	}else if(isOnLeftWall||isOnRightWall){
-   		if(Mathf.Abs(horizontalInput)  > 0.1){
-   			currSpeed.x +=  horizontalInput*2;
-   		}
-   	
+   		
+   	}
    	}
    	if(isTouchingFloor){
     	if(Time.time - soundLoopTime > 6/Mathf.Abs(currSpeed.x)){
@@ -626,8 +388,8 @@ function handleHorizontal(){
    	}else{
    	}
 		
-		trail.time = getHighestSpeed()/100;
-
+		trail.time = (trail.time + Mathf.Max(getHighestSpeed()/200,.5))/5;
+		trail.transform.position = transform.position + transform.up*0.5 + Random.insideUnitSphere*trail.time;
 	//bodyLight.intensity=getHighestSpeed()/55;
 
 	trail.renderer.material.color = Color.Lerp(Color.black,Color.green,getHighestSpeed()/75);
@@ -708,165 +470,76 @@ function getInputs(){
 
 		}
 	}
-
-
-}
-
-function setIsQuickSelecting(bool: boolean){
-	isQuickSelecting = bool;
-	if(isQuickSelecting){
-		EnterAimMode();
+if(hookShotIsStuck){
+		if(Vector3.Distance(transform.position,hookShotLocation)>=hookShotLength){
+			isHanging = true;
+		}else{
+			isHanging = false;
+		}
 	}else{
-		ExitAimMode();
+		isHanging = false;
 	}
 }
-function getIsQuickSelecting(){
-	return isQuickSelecting;
-}
-function setLetGoOfJump(bool : boolean){
-	letGoOfJump = bool;
 
-
-	if(bool){
-		isStillJumping = false;
-	}
-}
-//physics hack to detect collision exit from walls
-function isStillTouchingSomething(){
-	if(isOnLeftWall || isOnRightWall){
-		if(Time.time - lastTimeOnWall > .4){
-			isOnLeftWall = false;
-			isOnRightWall = false;
-		}else{
-			isAirborn = false;
-		}
-	}else if(isTouchingFloor){
-		if(Time.time-timeTouchingTheFloor  > 0.1){
-			isTouchingFloor = false;
-		}else{
-			isAirborn = false;
-			//isStillJumping = false;
-		}
-	}else if(isTouchingSomething){
-
-			body.rotation.eulerAngles.z = 0;
-			isTouchingSomething = false;
-			isAirborn = true;
-			//isStillJumping = false;
-
-	}
-
-}
-function SetWarpTo1(value : boolean){
-	isTeleportingTo1 = value;
-}
-function SetWarpTo2(value : boolean){
-	isTeleportingTo2 = value;
-}
 function whatAmITouching(){
-	var normal : Vector3;
-	var contactPoint : ContactPoint;
-	for(var i : int  = 0; i < collisionPoints.length;i++){
-		contactPoint = collisionPoints[i];
-		normal  = contactPoint.normal;
-		if(normal.y < -.1 ){
-			isOnLeftWall = false;
-			isOnRightWall = false;
-			isTouchingFloor  = false;
-			collisionAngle = Vector3.zero;
-			isAirborn= true;
-			return;
-		}
-	}
-	for(var j : int  = 0; j< collisionPoints.length;j++){
-	contactPoint = collisionPoints[j];
-	normal = contactPoint.normal;
-	if(Mathf.Abs(normal.x) < 0.8){
-		isOnLeftWall = false;
-		isOnRightWall = false;
-		collisionAngle = normal;
-		isTouchingFloor  = true;
-		timeTouchingTheFloor = Time.time;
-		wingHops = 5;
-		body.rotation.eulerAngles.z = 0;
-		return;
-		}
-	}
-	for(var k : int  = 0; k< collisionPoints.length;k++){
-		contactPoint  = collisionPoints[k];
-		normal= contactPoint.normal;
-	if(normal.x > .9){
-		isOnLeftWall = true;
-		lastTimeOnWall = Time.time;
-		body.rotation.eulerAngles.z = -35;
-		collisionAngle = normal;
-		return;
-	}else if(normal.x < -.9){
-		isOnRightWall = true;
-		lastTimeOnWall = Time.time;
-		body.rotation.eulerAngles.z = 35;
-		collisionAngle = normal;
-		return;
-		}
-	}
+	
+	
+ 	Debug.DrawLine(transform.position-transform.up*.75,transform.position-transform.up*.75+transform.right*.55,Color.green,2);
+ 	if(Physics.Linecast(transform.position-transform.up*.75,transform.position-transform.up*.75+transform.right*.55,right_ray)){
+ 		isOnRightWall=true;
+ 		//print("Right ray: "+right_ray.normal);
+ 	}else{
+ 	isOnRightWall = false;
+ 	}
+ 	Debug.DrawLine(transform.position-transform.up*.75,transform.position-transform.up*.75-transform.right*.55,Color.red,2);
+ 	if(Physics.Linecast(transform.position-transform.up*.75,transform.position-transform.up*.75-transform.right*.55,left_ray)){
+ 	isOnLeftWall=true;
+ 	 	 	 		//print("Left ray: "+left_ray.normal);
+
+ 	}else{
+ 	 	isOnLeftWall=false;
+
+ 	}
+ 	Debug.DrawLine(transform.position,transform.position-transform.up*1.1,Color.blue,2);
+ 	if(Physics.Linecast(transform.position,transform.position-transform.up*1.5,floor_ray)){
+ 		isTouchingFloor=true;
+
+ 		 
+wingHops = 5;
+ 	}else{
+ 	 		isTouchingFloor=false;
+
+ 	}
+ 	 isAirborn=(!isTouchingFloor && !isOnLeftWall && !isOnRightWall);
+
+ 	
 }
 function OnCollisionEnter(hit: Collision){
-		if(!isTouchingSomething){
+	if(isAirborn){
 		dust.emissionRate=getHighestSpeed()*2;
 		JumpSoundSource.PlayOneShot(collideSoundClip);
 		dust.Play();
-		isTouchingSomething = true;
-
+		
 	}
-
-
-	timeTouchingSomething = Time.time;
-	//	print("Enter: " + hit.contacts.length);
-
-	for(var i : int = 0; i <  hit.contacts.length; i++){
-		collisionPoints.Add(hit.contacts[i]);
-	}
-
-	if(hit.gameObject.rigidbody){
+	if(hit.gameObject.rigidbody && hit.gameObject.rigidbody.mass * hit.rigidbody.velocity.magnitude>25){
 		setStaticFrame((hit.gameObject.rigidbody.velocity));
 	}
-
 	if(hit.gameObject.tag.Equals("1DMG")){
-		if(!dead){
-
+		if(!dead && invuln < 1){
 			killPlayer();
 		}
 	}
 }
-function OnCollisionExit(hit: Collision){
 
-
-
-
-	isOnLeftWall = false;
-		isOnRightWall = false;
-		isTouchingFloor  = false;
-		isAirborn = true;
-				body.rotation.eulerAngles.z = 0;
-
-}
 
 function OnCollisionStay (hit : Collision){
-	if(!isTouchingSomething){
-		dust.emissionRate=getHighestSpeed()*2;
-		dust.Play();
-		isTouchingSomething = true;
-	}
-	timeTouchingSomething = Time.time;
-	for(var i : int = 0; i <  hit.contacts.length; i++){
-		collisionPoints.Add(hit.contacts[i]);
-	}	
-	if(hit.gameObject.rigidbody){
+	
+
+	if(hit.gameObject.rigidbody && hit.rigidbody.mass*hit.rigidbody.velocity.magnitude> rigidbody.mass*rigidbody.velocity.magnitude){
 		setStaticFrame((hit.gameObject.rigidbody.velocity));
 	}
 	if(hit.gameObject.tag.Equals("1DMG")){
-		if(!dead){
-
+		if(!dead && invuln < 1){
 			killPlayer();
 		}
 	}
@@ -874,6 +547,7 @@ function OnCollisionStay (hit : Collision){
 
 
 function sendBackToCheckPoint(){
+		invuln = 10;
 		transform.position = checkPointLocation;
 		checkPointTimer = Time.time;
 		isTeleporting = true;
@@ -882,7 +556,6 @@ function sendBackToCheckPoint(){
 		checkPointScript.playRespawnSound();
 		if(hookShotIsStuck){
    	 			LetGoHookShot();
-
 				hook.letGo();
 			}
  }
@@ -918,6 +591,7 @@ function SetCheckPointIsReady(){
 	checkPointTimer = 0;
 }
 function killPlayer(){
+	if(invuln <1){
 	timeAtKillPlayer = Time.time;
 	var velocityAtDeath = currSpeed;
 	if(hasCheckpoint && (timeAtKillPlayer > checkPointTimer+5)){
@@ -935,11 +609,14 @@ function killPlayer(){
 //	controller.enabled=false;
 
 	}
+	}
 }
 function OnTriggerStay(other : Collider){
-	//if(other.gameObject.GetComponent(MovingPlatformPhysicsHack)){
-	//	//print("MovingPlatform");
-	//}
+	if(other.gameObject.tag.Equals("1DMG")){
+		if(!dead && invuln < 1){
+			killPlayer();
+		}
+	}
 }
 function OnTriggerExit(other : Collider){
 	if(isTeleportingTo1 && other.tag.Equals("Portal1")){
@@ -950,10 +627,11 @@ function OnTriggerExit(other : Collider){
 }
 function OnTriggerEnter(other : Collider){
 	if(other.tag.Equals("1DMG") && !isTeleporting && Time.time > timeAtKillPlayer +0.1){
-		if(!dead){
-			////print("killing trigger");
+		if(other.gameObject.tag.Equals("1DMG")){
+		if(!dead && invuln < 1){
 			killPlayer();
 		}
+	}
 
 	}else if(other.tag.Equals("Portal2")&&!isTeleportingTo2){
 		var high1 : float = 0;
@@ -986,171 +664,6 @@ function OnTriggerEnter(other : Collider){
 		RunSoundSource.PlayOneShot(WinSound);
 	}
 }
-//add zoom setting to player prefs
-function OnDestroy () {
-	dead = true;
-	showGUI = true;
-}
-function checkForUnlocks(){
-	
-
-	if(Application.loadedLevelName.Equals("Level 2") && PlayerPrefs.GetInt("PortalRigUnlocked",0)==0){
-			endOfLevelText =  "Unlocked: Portals! ";
-		PlayerPrefs.SetInt("PortalRigUnlocked",1);
-	
-	}if(Application.loadedLevelName.Equals("Level 4")  && PlayerPrefs.GetInt("TrackingDartUnlocked",0)==0){
-			endOfLevelText =  "Gun Upgrade: Tracking Darts! ";
-		PlayerPrefs.SetInt("TrackingDartUnlocked",1);
-	}if(Application.loadedLevelName.Equals("Level 5") && PlayerPrefs.GetInt("WingsUnlocked",0)==0){
-			endOfLevelText =  "Unlocked: FlappyWings!";
-		PlayerPrefs.SetInt("WingsUnlocked",1);
-	}
-
-	if(!endOfLevelText.Equals("")){
-		var unlockBox = endOfLevelBox;
-		unlockBox.y +=Screen.height/5;
-		unlockBox.x +=Screen.width/4;
-		unlockBox.width=Screen.width/2;
-			//GUI.color = Color.black;
-
-		GUI.contentColor = Color.white;
-
-		if(Screen.currentResolution.width>1000){
-		GUI.skin.label.fontSize=48;
-		}else{
-		GUI.skin.label.fontSize=48;
-
-		}
-		GUI.Box(unlockBox,"");
-		GUI.Label(unlockBox,endOfLevelText);
-	}
-}
-function setIsJumping(val :boolean){
-   	isJumping = val;
- 	//setToJumping = true;
-}
-function setIsPressingDown(bool:boolean){
-	isPressingDown = bool;
-}
-function getIsPressingDown(){
-	return isPressingDown;
-}
-function getIsStillJumping(){
-	return isStillJumping;
-}
-function getMessageRect(){
-	return messageRect;
-}
-
-function setWingsEquipped(bool:boolean){
-	if(bool){
-		WingsEquipped = true;
-		wings.SetActiveRecursively(true);
-
-
-	}else{
-
-		WingsEquipped = false;
-		wings.SetActiveRecursively(false);
-
-
-	}
-}
-function isMenu(){
-	return showMenu;
-}
-function EnterDeadMode(){
-	if(isInAimMode){
-		ExitAimMode();
-	}else if(isInMenuMode){
-		ExitMenuMode();
-	}
-}
-
-// Pause Mode is when Everything is frozen. Time Stops. Simulation Pauses...;
-function EnterPauseMode(){
-	print("EnteringPauseMode");
-	pauseVelocity = getHighestVector();
-	Time.timeScale = 0;
-	gameIsPaused = true;
-}
-function EnterMenuMode(){
-	print("EnteringMenuMode");
-	if(isInGameMode){
-		ExitGameMode();
-	}else if(isInAimMode){
-		ExitAimMode();
-	}
-	GUIController.hideControls();
-	isInMenuMode = true;
-	showMenu = true;
-
-}
-function ExitMenuMode(){
-	print("ExitMenuMode");
-	isInMenuMode = false;
-	showMenu = false;
-	//ActivateRig();
-}
-function ExitPauseMode(){
-	print("ExitPauseMode");
-	Time.timeScale = 1;
-	isExitingPause  = 3;
-	gameIsPaused = false;
-	if(isInGameMode){
-		//ActivateRig();
-	}
-}
-//GameMode is when you move, enemies move, clock ticks;
-function EnterGameMode(){
-	print("EnteringGameMode");
-	ActivateRig();
-	if(isInMenuMode){
-		ExitMenuMode();
-	}else if(isInAimMode){
-		ExitAimMode();
-	}
-	isInGameMode = true;
-}
-function ExitGameMode(){
-	print("ExitGameMode");
-	if(!gameIsPaused){
-		EnterPauseMode();
-	}
-	isInGameMode = false;
-}
-//AimMode should be paused, but allow you to aim curser, but you dont move and enemies dont move
-function EnterAimMode(){
-	print("EnteringAimMode");
-	SetReticalActive(true);
-	if(isInGameMode){
-		ExitGameMode();
-	}else if(isInMenuMode){
-		ExitMenuMode();
-	}
-	GUIController.setAiming();
-	isInAimMode = true;
-}
-
-function ExitAimMode(){
-	print("ExitAimMode");
-	isInAimMode = false;
-}
-
-function getGameIsPaused(){
-	return gameIsPaused;
-}
-function getIsInMenuMode(){
-	return isInMenuMode;
-}
-function getIsInGameMode(){
-	return isInGameMode;
-}
-function getIsInAimMode(){
-	return isInAimMode;
-}
-
-
 
 function isShowMenu(){
 		GUI.contentColor = Color.white;
@@ -1510,4 +1023,326 @@ function SetHookShotSwingAxis(pos:Vector3){
 }
 function LetGoHookShot(){
 	hookShotIsStuck = false;
+}
+function GetReticalActive(){
+	return retical.active;
+}
+function SetReticalActive(bool : boolean){
+	retical.SetActive(bool);
+}
+function setAimSpot(pos: Vector3){
+	aimSpot = pos;
+}
+function getAimSpot(){
+	return aimSpot;
+}
+
+//add zoom setting to player prefs
+function OnDestroy () {
+	dead = true;
+	showGUI = true;
+}
+function checkForUnlocks(){
+	
+
+	if(Application.loadedLevelName.Equals("Level 2") && PlayerPrefs.GetInt("PortalRigUnlocked",0)==0){
+			endOfLevelText =  "Unlocked: Portals! ";
+		PlayerPrefs.SetInt("PortalRigUnlocked",1);
+	
+	}if(Application.loadedLevelName.Equals("Level 4")  && PlayerPrefs.GetInt("TrackingDartUnlocked",0)==0){
+			endOfLevelText =  "Gun Upgrade: Tracking Darts! ";
+		PlayerPrefs.SetInt("TrackingDartUnlocked",1);
+	}if(Application.loadedLevelName.Equals("Level 5") && PlayerPrefs.GetInt("WingsUnlocked",0)==0){
+			endOfLevelText =  "Unlocked: FlappyWings!";
+		PlayerPrefs.SetInt("WingsUnlocked",1);
+	}
+
+	if(!endOfLevelText.Equals("")){
+		var unlockBox = endOfLevelBox;
+		unlockBox.y +=Screen.height/5;
+		unlockBox.x +=Screen.width/4;
+		unlockBox.width=Screen.width/2;
+			//GUI.color = Color.black;
+
+		GUI.contentColor = Color.white;
+
+		if(Screen.currentResolution.width>1000){
+		GUI.skin.label.fontSize=48;
+		}else{
+		GUI.skin.label.fontSize=48;
+
+		}
+		GUI.Box(unlockBox,"");
+		GUI.Label(unlockBox,endOfLevelText);
+	}
+}
+function setIsJumping(val :boolean){
+   	isJumping = val;
+ 	//setToJumping = true;
+}
+function setIsPressingDown(bool:boolean){
+	isPressingDown = bool;
+}
+function getIsPressingDown(){
+	return isPressingDown;
+}
+function getIsStillJumping(){
+	return isStillJumping;
+}
+function getMessageRect(){
+	return messageRect;
+}
+
+function setWingsEquipped(bool:boolean){
+	if(bool){
+		WingsEquipped = true;
+		wings.SetActiveRecursively(true);
+
+
+	}else{
+
+		WingsEquipped = false;
+		wings.SetActiveRecursively(false);
+
+
+	}
+}
+function isMenu(){
+	return showMenu;
+}
+function EnterDeadMode(){
+	if(isInAimMode){
+		ExitAimMode();
+	}else if(isInMenuMode){
+		ExitMenuMode();
+	}
+}
+
+// Pause Mode is when Everything is frozen. Time Stops. Simulation Pauses...;
+function EnterPauseMode(){
+	print("EnteringPauseMode");
+	pauseVelocity = getHighestVector();
+	Time.timeScale = 0;
+	gameIsPaused = true;
+}
+function EnterMenuMode(){
+	print("EnteringMenuMode");
+	if(isInGameMode){
+		ExitGameMode();
+	}else if(isInAimMode){
+		ExitAimMode();
+	}
+	GUIController.hideControls();
+	isInMenuMode = true;
+	showMenu = true;
+
+}
+function ExitMenuMode(){
+	print("ExitMenuMode");
+	isInMenuMode = false;
+	showMenu = false;
+	//ActivateRig();
+}
+function ExitPauseMode(){
+	print("ExitPauseMode");
+	Time.timeScale = 1;
+	isExitingPause  = 3;
+	gameIsPaused = false;
+	if(isInGameMode){
+		//ActivateRig();
+	}
+}
+//GameMode is when you move, enemies move, clock ticks;
+function EnterGameMode(){
+	print("EnteringGameMode");
+	ActivateRig();
+	if(isInMenuMode){
+		ExitMenuMode();
+	}else if(isInAimMode){
+		ExitAimMode();
+	}
+	isInGameMode = true;
+}
+function ExitGameMode(){
+	print("ExitGameMode");
+	if(!gameIsPaused){
+		EnterPauseMode();
+	}
+	isInGameMode = false;
+}
+//AimMode should be paused, but allow you to aim curser, but you dont move and enemies dont move
+function EnterAimMode(){
+	print("EnteringAimMode");
+	SetReticalActive(true);
+	if(isInGameMode){
+		ExitGameMode();
+	}else if(isInMenuMode){
+		ExitMenuMode();
+	}
+	GUIController.setAiming();
+	isInAimMode = true;
+}
+
+function ExitAimMode(){
+	print("ExitAimMode");
+	isInAimMode = false;
+}
+
+function getGameIsPaused(){
+	return gameIsPaused;
+}
+function getIsInMenuMode(){
+	return isInMenuMode;
+}
+function getIsInGameMode(){
+	return isInGameMode;
+}
+function getIsInAimMode(){
+	return isInAimMode;
+}
+
+function getHighestSpeed(){
+	return Mathf.Max(speedArray);
+}
+
+function getActiveRig(){
+	return PlayerPrefs.GetString("Rig");
+}
+function populateSpeedArray(){
+ 	if(speedCounter == 1){
+    	speedCounter = 2;
+    }else if(speedCounter == 2){
+    	speedCounter = 3;
+    }else{
+    speedCounter = 1;
+    }
+    if(vectorArray == null || vectorArray.Length<4) vectorArray = new Vector3[4];
+    vectorArray[speedCounter] = currSpeed;
+     if(speedArray == null || speedArray.Length<4) speedArray = new float[4];
+    speedArray[speedCounter] = currSpeed.magnitude;
+}
+
+function getHighestVector(){
+	var highest : float = 0;
+	var indexOfHighest: float = 0;
+	for (var i : int = 0; i < 4; i++){
+		if(highest < vectorArray[i].magnitude){
+			indexOfHighest = i;
+			highest = vectorArray[i].magnitude;
+		}
+	}
+	return vectorArray[indexOfHighest];
+}
+
+function checkForFlags(){
+	if(startingCheckPointFlag){
+		checkPointScript.setCheckPoint();
+		startingCheckPointFlag = false;
+	}
+
+}
+function getPCDebugging(){
+	return PCDebugging;
+}
+
+function setIsPressingLeft(bool:boolean){
+	isPressingLeft = bool;
+}
+function getIsPressingLeft(){
+	return isPressingLeft;
+}
+function getIsPressingRight(){
+	return isPressingRight;
+}
+function setIsPressingRight(bool:boolean){
+	isPressingRight = bool;
+}
+function getIsPressingJump(){
+	return isJumping;
+}
+function SetIsHanging(bool : boolean){
+	isHanging = bool;
+}
+
+function GetRetical(){
+	return retical;
+
+}
+
+function HangMovementTransformation(direction : Vector3){
+	var newDirection :Vector3 = Vector3.zero;
+	var distance = Vector3.Distance(transform.position,hookShotLocation);
+	var swinging : boolean = false;
+	if(distance > hookShotLength+2){
+		newDirection -= ((transform.position - hookShotLocation).normalized  * ((distance-hookShotLength)));
+		swinging = true;	
+	}
+	if(swinging||(Vector3.Distance(transform.position + direction,hookShotLocation)) >= hookShotLength+2){
+		var between = ((transform.position) - hookShotLocation).normalized;
+		var rDirection = Vector3.Cross(Vector3.forward,between);
+					//Debug.DrawLine(transform.position,transform.position + rDirection*5,Color.black,2);
+
+		newDirection += Vector3.Project(direction,rDirection);
+		if(newDirection.magnitude > runSpeed){
+			newDirection.Scale(Vector3(1,.995,0));
+		}
+	swinging = true;
+	}
+		
+	if(newDirection==Vector3.zero) return direction;
+	return newDirection;
+}
+function setIsQuickSelecting(bool: boolean){
+	isQuickSelecting = bool;
+	if(isQuickSelecting){
+		EnterAimMode();
+	}else{
+		ExitAimMode();
+	}
+}
+function getIsQuickSelecting(){
+	return isQuickSelecting;
+}
+function setLetGoOfJump(bool : boolean){
+	letGoOfJump = bool;
+
+
+	if(bool){
+		isStillJumping = false;
+	}
+}
+
+function applyGravity(){
+	if(currSpeed.y > -140){
+
+    if(isOnLeftWall||isOnRightWall){
+    	if(currSpeed.y < -10){
+    		currSpeed.y = currSpeed.y/1.02;
+    	}else if(isOnLeftWall){
+    		currSpeed -= Vector3.Cross(left_ray.normal,Vector3.back)*0.6* gravity * Time.fixedDeltaTime;
+		}else if(isOnRightWall){
+    		currSpeed -= Vector3.Cross(right_ray.normal,Vector3.forward)*0.6* gravity * Time.fixedDeltaTime;
+		}
+    //apply gravityies
+    }else if(isStillJumping){
+    	currSpeed.y -= 0.6*gravity * Time.fixedDeltaTime;
+
+    }else{
+    	currSpeed.y -= gravity * Time.fixedDeltaTime;
+    }
+    //add extra gravity if user wants it
+    if(isPressingDown){
+    	currSpeed.y -= gravity * Time.fixedDeltaTime;
+    }
+
+    }else{
+    //////////print(currSpeed.y);
+    }
+}
+
+function SetWarpTo1(value : boolean){
+	isTeleportingTo1 = value;
+}
+function SetWarpTo2(value : boolean){
+	isTeleportingTo2 = value;
 }
