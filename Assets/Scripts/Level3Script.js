@@ -10,6 +10,6 @@ function Update () {
 }
 
 function SwitchEventRecieved(other: GameObject){
-	traps.SetActiveRecursively(false);
+	traps.SetActive(false);
 	print("here");
 }
