@@ -13,6 +13,8 @@ private var soundLoopTime : float = 0;
 private var AlreadyActivated : boolean;
 private var messageSent : boolean = true;
 var isTimedSwitch : boolean;
+var signal_sender : boolean;
+
 private var timeAtSwitched : float;
 var timedSwitchDelay : float;
 var soundOnHit : AudioClip;
@@ -21,17 +23,21 @@ public var InactiveColor :Color = Color.blue;
 public var ActiveColor :Color = Color.green;
 public var WarningColor :Color = Color.yellow;
 public var transition_speed : float = 0.05f;
+public var Recievers : List.<SwitchReciever> = new  List.<SwitchReciever>();
 
 
 function Start () {
 	
-
+if(ReceivingScript!=null){
+Recievers.Add(ReceivingScript);
+}
 }
 
 function Update () {
 	if(!messageSent){
+			messageSent = true;
+
 		SendMessageToReciever();
-		messageSent = true;
 	}
 	
 	if(isTimedSwitch && ActiveState){
@@ -45,9 +51,7 @@ function Update () {
     	
 
 		if(Time.time - timeAtSwitched > timedSwitchDelay){
-			AlreadyActivated = false;
-			SwitchHit();
-			AlreadyActivated = false;
+			SetInactive();
 		}
 		if(Time.time - timeAtSwitched > timedSwitchDelay*0.90 && !timeWarning){
 			this.gameObject.renderer.material.color=WarningColor;
@@ -55,31 +59,31 @@ function Update () {
 		}
 	}
 	
+	if(this.renderer!=null){
 	if(ActiveState){
 				this.gameObject.renderer.material.color = Color.Lerp(this.gameObject.renderer.material.color,ActiveColor,transition_speed);
 	}else{
 				this.gameObject.renderer.material.color = Color.Lerp(this.gameObject.renderer.material.color,InactiveColor,transition_speed);
 
 	}
+	}
 
 }
 function SendMessageToReciever(){
-	ReceivingScript.RecieveSwitchEvent(this.gameObject);
-	print("Sending");
+	for(var i : int = 0 ; i < Recievers.Count; i++){
+		Recievers[i].RecieveSwitchEvent(this.gameObject);
+		print("Sending");
+	}
 
 }
 function OnCollisionEnter(other: Collision){
 	if(ActivatedByPlayerBullets && other.transform.root.name.Equals("PlayerBullet(Clone)")){
 		SwitchHit();
-		if(isTimedSwitch){
-			timeAtSwitched  = Time.time;
-		}
+		
 	}
 	if(ActivatedByPlayerContact && other.transform.root.name.Equals("Player")){
 		SwitchHit();
-		if(isTimedSwitch){
-			timeAtSwitched  = Time.time;
-		}
+	
 
 	
 	}
@@ -89,33 +93,47 @@ function OnTriggerEnter(other: Collider){
 	
 	if(ActivatedByPlayerContact && other.transform.root.name.Equals("Player")){
 		SwitchHit();
-		if(isTimedSwitch){
-			timeAtSwitched  = Time.time;
-		}
+		
 
 	
 	}
 	if(ActivatedByPlayerBullets && other.transform.root.name.Equals("PlayerBullet(Clone)")){
 		SwitchHit();
-		if(isTimedSwitch){
-			timeAtSwitched  = Time.time;
-		}
+		
+	}
+	}
+	function OnTriggerStay(other: Collider){
+	
+	if(ActivatedByPlayerContact && other.transform.root.name.Equals("Player")){
+		SwitchHit();
+	
+
+	
+	}
+	if(ActivatedByPlayerBullets && other.transform.root.name.Equals("PlayerBullet(Clone)")){
+		SwitchHit();
+		
 	}
 	}
 	
-function SetActive(){
+public function SetActive(){
 	
-	ActiveState = true;
-	if(!AlreadyActivated && SingleUse) messageSent = false;
-	
-	AlreadyActivated = true;
-	
+	 	messageSent = false;
+	 	AlreadyActivated = true;
+	 	ActiveState = true;
+	 	timeAtSwitched = Time.time;
+	 	if(soundOnHit!=null)
+	 		audio.PlayOneShot(soundOnHit);
+
+	 
 
 }
 
-function SetInactive(){
+public function SetInactive(){
 	
 	ActiveState = false;
+	
+
 	
 }
 function INPUT( input : boolean){
@@ -124,43 +142,25 @@ function INPUT( input : boolean){
 }
 
 
-function SwitchHit(){
-	
-
+ public function SwitchHit(){
+	if(signal_sender){
+		messageSent = false;
+		if(soundOnHit!=null) audio.PlayOneShot(soundOnHit);
+		if(this.gameObject.renderer!=null){
+			renderer.material.color = ActiveColor;
+		}
+	}
 	if(ToggleAble){
 		if(ActiveState) SetInactive();
-		else SetActive();
-		
-		if(soundOnHit && ActiveState){
-			audio.Play();
-		}
-
-		messageSent = false;
-		print(ActiveState);
-	}else{
-		if(!AlreadyActivated){
-			if(ActiveState) SetInactive();
-			else SetActive();
-			if(soundOnHit && ActiveState){
-			audio.Play();
-		}
-
-			AlreadyActivated = true;
-			messageSent = false;
-
-		}
-		
+		else SetActive();	
 	}
-	if(ActiveState){
-		if(SingleUse){
-           
-			timeWarning = false;
-		}
-	}else{
-		
-		timeWarning = true;
-
+	
+	if(SingleUse && !AlreadyActivated){ 
+		SetActive();
 	}
+	
+	
+	
 	
 }
 function GetState(){
